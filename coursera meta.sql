@@ -174,7 +174,42 @@ CREATE TRIGGER NotifyProductDelete
 END //
 DELIMITER ;
 
+DELIMITER // 
+CREATE TRIGGER ProductSellPriceInsertCheck
+AFTER INSERT
+ON Products FOR EACH ROW
+BEGIN
+IF NEW.SellPrice <= NEW.BuyPrice THEN
+INSERT INTO Notifications (Notification,DateTime)
+VALUES (concat('A SellPrice same or less than the BuyPrice was inserted for ProductID ', NEW.ProductID), NOW());
+END IF;
+END//
+DELIMITER ; 
 
 
+DELIMITER //
+
+CREATE TRIGGER ProductSellPriceUpdateCheck 
+    AFTER UPDATE  
+    ON Products FOR EACH ROW  
+	BEGIN
+	IF NEW.SellPrice <= NEW.BuyPrice THEN
+		INSERT INTO Notifications(Notification,DateTime) 
+		VALUES(CONCAT(NEW.ProductID,' was updated with a SellPrice of ', NEW.SellPrice,' which is the same or less than the BuyPrice'), NOW()); 
+    END IF;
+	END //
+
+DELIMITER ;
+
+
+DELIMITER //
+
+CREATE TRIGGER NotifyProductDelete 
+    AFTER DELETE   
+    ON Products FOR EACH ROW   
+	INSERT INTO Notifications(Notification, DateTime) 
+    VALUES(CONCAT('The product with a ProductID ', OLD.ProductID,' was deleted'), NOW()); 
+END //
+DELIMITER ;
 
 
